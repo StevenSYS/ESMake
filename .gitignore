@@ -1,0 +1,18 @@
+build*/
+src/progInfo.h
+remove_*
+
+# Executables
+*.exe
+*.app
+
+# Static Libraries
+*.lib
+*.a
+
+# Shared Libraries
+*.dll
+*.dylib
+*.so
+
+.DS_Store

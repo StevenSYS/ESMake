@@ -1,0 +1,37 @@
+#ifndef __PROGINFO__
+#define __PROGINFO__
+
+/* - Program - */
+#define PROGRAM_NAME "@PROJECT_NAME@"
+
+/* - Length - */
+#define LENGTH_BUFFER 255
+
+/* - Legend - */
+#define LEGEND_OUTPUT '>'
+#define LEGEND_SETTING '%'
+#define LEGEND_ITEM '+'
+#define LEGEND_ITEMDEFAULT '-'
+#define LEGEND_COMMENT '!'
+#define LEGEND_ESCAPE '\\'
+
+/* - Type - */
+#define TYPE_ENUM "enum"
+#define TYPE_LANG "lang"
+
+/* - Max - */
+#define MAX_OUTPUTS 2
+
+/* - Setting - */
+#define SETTING_MODE "mode"
+#define SETTING_PREENUM "preEnum"
+#define SETTING_PRELANG "preLang"
+
+/* - Misc. - */
+#define AUTOGEN_TEXT \
+	"/*\n" \
+	"	Generated with " PROGRAM_NAME ",\n" \
+	"	do not modify this file directly.\n" \
+	"*/\n"
+
+#endif
