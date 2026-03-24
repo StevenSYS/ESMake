@@ -32,7 +32,7 @@ static inline unsigned int initFiles(FILE *files[]) {
 	unsigned int i;
 	unsigned int ret = 0;
 	
-	for (i = 0; outNames[i] != NULL && i < MAX_OUTPUTS; i++) {
+	for (i = 0; i < MAX_OUTPUTS && outNames[i] != NULL; i++) {
 		if (file_open(
 			&files[i],
 			outNames[i],
