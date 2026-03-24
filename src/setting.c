@@ -28,6 +28,24 @@ int setting_add(
 	return 0;
 }
 
+setting_t *setting_find(
+	settings_t *settings,
+	const char *find
+) {
+	unsigned int i;
+	
+	for (i = 0; i < settings->count; i++) {
+		if (strncmp(
+			settings->i[i].name,
+			find,
+			SETTING_LENGTH_STRING
+		) == 0) {
+			return &settings->i[i];
+		}
+	}
+	return NULL;
+}
+
 int setting_getStr(
 	settings_t *settings,
 	char *str
@@ -38,6 +56,7 @@ int setting_getStr(
 	unsigned char j;
 	
 	setting_t tmpSet;
+	setting_t *tmpSetPtr;
 	
 	for (i = 1; str[i]; i++) {
 		if (whitespace(str[i])) {
@@ -85,24 +104,17 @@ int setting_getStr(
 			return 1;
 		}
 	}
-	setting_add(settings, &tmpSet);
-	return 0;
-}
-
-setting_t *setting_find(
-	settings_t *settings,
-	const char *find
-) {
-	unsigned int i;
 	
-	for (i = 0; i < settings->count; i++) {
-		if (strncmp(
-			settings->i[i].name,
-			find,
+	tmpSetPtr = setting_find(settings, tmpSet.name);
+	
+	if (tmpSetPtr == NULL) {
+		setting_add(settings, &tmpSet);
+	} else {
+		strncpy(
+			tmpSetPtr->value,
+			tmpSet.value,
 			SETTING_LENGTH_STRING
-		) == 0) {
-			return &settings->i[i];
-		}
+		);
 	}
-	return NULL;
+	return 0;
 }

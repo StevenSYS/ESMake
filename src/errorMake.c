@@ -52,7 +52,7 @@ static inline unsigned int initFiles(FILE *files[]) {
 	return ret;
 }
 
-int errorMake_getOutputs(char *buffer) {
+int getOutputs(char *str) {
 	unsigned char j;
 	unsigned int i = 0;
 	unsigned int k;
@@ -65,18 +65,18 @@ int errorMake_getOutputs(char *buffer) {
 		for (j = 0; j < 2; j++) {
 			check = 0;
 			
-			for (i++; buffer[i]; i++) {
-				if (buffer[i] == '"') {
+			for (i++; str[i]; i++) {
+				if (str[i] == '"') {
 					check = 1;
 					if (j == 0) {
-						outNames[k] = buffer + (i + 1);
+						outNames[k] = str + (i + 1);
 					} else {
-						buffer[i] = 0;
+						str[i] = 0;
 					}
 					break;
 				} else if (
 					j == 0 &&
-					!whitespace(buffer[i])
+					!whitespace(str[i])
 				) {
 					fprintf(stderr, "ERROR: Output contains non whitespace character\n");
 					return 1;
@@ -116,40 +116,69 @@ int errorMake_readFile(FILE *fileInput) {
 		return 1;
 	}
 	
-	fileCount = initFiles(files);
-	
-	if (!fileCount) {
-		return 1;
+	for (i = 0; i < MAX_OUTPUTS; i++) {
+		files[i] = NULL;
 	}
 	
 	while (fgets(buffer, LENGTH_BUFFER, fileInput) != NULL) {
 		offset = 0;
 		
+		if (
+			(
+				buffer[0] != LEGEND_OUTPUT &&
+				buffer[0] != LEGEND_SETTING &&
+				buffer[0] != LEGEND_COMMENT
+			) &&
+			!fileCount
+		) {
+			fprintf(stderr, "ERROR: No output files have been specified\n");
+			return 1;
+		}
+		
 		switch (buffer[0]) {
 			case LEGEND_OUTPUT:
-				fprintf(stderr, "ERROR: Output file(s) can only be specified at the beginning of the file\n");
-				return 1;
+				for (i = 0; i < MAX_OUTPUTS; i++) {
+					if (files[i] != NULL) {
+						fclose(files[i]);
+					}
+				}
+				if (getOutputs(buffer)) {
+					return 1;
+				}
+				
+				fileCount = initFiles(files);
+				
+				if (!fileCount) {
+					return 1;
+				}
+				break;
 			case LEGEND_SETTING:
 				if (setting_getStr(&settings, buffer)) {
 					return 1;
 				}
+				
+				if (strncmp(
+					buffer + 1,
+					SETTING_MODE,
+					LENGTH_BUFFER - 1
+				) == 0) {
+					tmpSet = setting_find(&settings, SETTING_MODE);
+					
+					if (tmpSet == NULL) {
+						fprintf(stderr, "ERROR: \"" SETTING_MODE "\" isn't set\n");
+						return 1;
+					}
+					
+					if (mode_getStr(
+						tmpSet->value,
+						&mode
+					)) {
+						return 1;
+					}
+				}
 				break;
 			case LEGEND_ITEM:
 			case LEGEND_ITEMDEFAULT:
-				tmpSet = setting_find(&settings, SETTING_MODE);
-			
-				if (tmpSet == NULL) {
-					fprintf(stderr, "ERROR: \"" SETTING_MODE "\" isn't set\n");
-					return 1;
-				}
-				
-				if (mode_getStr(
-					tmpSet->value,
-					&mode
-				)) {
-					return 1;
-				}
-				
 				if (item_addFile(
 					files,
 					fileCount,

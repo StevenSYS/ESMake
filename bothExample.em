@@ -1,5 +1,6 @@
-> "exampleLang.h"
-%mode "lang"
+> "exampleRet.h" "exampleEnum.h"
+%mode "enum"
+%preEnum "ERROR_"
 %preLang "LANG_ERROR_"
 ! | Legend | Meaning                     |
 ! | ------ | --------------------------- |
@@ -9,5 +10,9 @@
 ! | -      | Item (Switch Default)       |
 ! | !      | Comment                     |
 ! | \      | Escape                      |
+
++EXAMPLE
+> "exampleLang.h"
+%mode "lang"
 
 +EXAMPLE "Example error"

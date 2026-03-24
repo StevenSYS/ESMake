@@ -4,7 +4,6 @@
 #include "progInfo.h"
 #include "whitespace.h"
 
-
 int item_addFile(
 	FILE *files[],
 	unsigned int fileCount,
@@ -18,8 +17,14 @@ int item_addFile(
 	unsigned int i;
 	unsigned char j;
 	static unsigned int currentCount = 0;
+	static enum modes prevMode = 0;
 	static setting_t *preEnum = NULL;
 	static setting_t *preLang = NULL;
+	
+	if (mode != prevMode) {
+		currentCount = 0;
+		prevMode = mode;
+	}
 	
 	if (
 		files == NULL ||
@@ -86,10 +91,6 @@ int item_addFile(
 				preEnum->value,
 				str + 1
 			);
-			
-			if (currentCount < (itemCount - 1)) {
-				fprintf(files[1], ",");
-			}
 			
 			fprintf(files[1], "\n");
 			break;
