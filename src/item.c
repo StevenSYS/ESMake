@@ -17,7 +17,7 @@ int item_addFile(
 	unsigned int i;
 	unsigned char j;
 	static unsigned int currentCount = 0;
-	static enum modes prevMode = 0;
+	static enum modes prevMode = MODE_COUNT;
 	static setting_t *preEnum = NULL;
 	static setting_t *preLang = NULL;
 	
@@ -91,6 +91,10 @@ int item_addFile(
 				preEnum->value,
 				str + 1
 			);
+			
+			if (currentCount < (itemCount - 1)) {
+				fprintf(files[1], ",");
+			}
 			
 			fprintf(files[1], "\n");
 			break;
