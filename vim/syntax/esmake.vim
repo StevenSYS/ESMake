@@ -9,16 +9,16 @@ endif
 
 runtime! syntax/c.vim
 
-syn match emOutput "^>"
-syn match emSetting "^%\S\+"
-syn match emItem "^[+|-]\S\+"
+syn match emVariable "^[%>]\S\+"
+syn match emItem "^[+-]\S\+"
+syn match emItemOut "^|\S\+"
 syn match emEscape "^\\.\+"
 syn region emComment start="^!" skip="\\$" end="$"
 
 " Settings
-hi def link emOutput keyword
-hi def link emSetting keyword
+hi def link emVariable keyword
 hi def link emItem structure
+hi def link emItemOut function
 hi def link emEscape special
 hi def link emComment comment
 

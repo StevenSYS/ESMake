@@ -4,16 +4,15 @@
 #include <stdio.h>
 
 #include "mode.h"
-#include "setting.h"
+#include "file.h"
+#include "variable.h"
 
 /* Functions */
 int item_addFile(
-	FILE *files[],
-	unsigned int fileCount,
-	unsigned int itemCount,
-	char *str,
-	enum modes mode,
-	settings_t *settings
+	const char *buffer,
+	files_t *files,
+	variables_t *outVars,
+	variables_t *vars
 );
 
 #endif

@@ -9,9 +9,10 @@
 
 /* - Legend - */
 #define LEGEND_OUTPUT '>'
-#define LEGEND_SETTING '%'
+#define LEGEND_VARIABLE '%'
 #define LEGEND_ITEM '+'
-#define LEGEND_ITEMDEFAULT '-'
+#define LEGEND_ITEM_DEFAULT '-'
+#define LEGEND_ITEM_OUT '|'
 #define LEGEND_COMMENT '!'
 #define LEGEND_ESCAPE '\\'
 
@@ -19,13 +20,13 @@
 #define TYPE_ENUM "enum"
 #define TYPE_LANG "lang"
 
-/* - Max - */
-#define MAX_OUTPUTS 2
+/* - Variable - */
+#define VARIABLE_MODE "mode"
+#define VARIABLE_PREENUM "preEnum"
+#define VARIABLE_PRELANG "preLang"
 
-/* - Setting - */
-#define SETTING_MODE "mode"
-#define SETTING_PREENUM "preEnum"
-#define SETTING_PRELANG "preLang"
+/* - Argument - */
+#define ARGUMENT_VERBOSE "-v"
 
 /* - Misc. - */
 #define AUTOGEN_TEXT \

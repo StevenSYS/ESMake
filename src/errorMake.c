@@ -1,124 +1,55 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "file.h"
 #include "item.h"
-#include "setting.h"
+#include "verbose.h"
+#include "variable.h"
 #include "progInfo.h"
-#include "whitespace.h"
 
-static char check = 0;
-static char *outNames[MAX_OUTPUTS];
+// static char check = 0;
 
-static inline unsigned int getItemCount(FILE *fileInput) {
+static inline size_t getItemCount(FILE *fileInput) {
 	char buffer[LENGTH_BUFFER] = { 0 };
-	unsigned int ret = 0;
+	size_t ret = 0;
 	long int prevPos = ftell(fileInput);
+	
+	VERBOSE_PRINTF("Getting item count...\n");
 	
 	while (fgets(buffer, LENGTH_BUFFER, fileInput) != NULL) {
 		if (
 			buffer[0] == LEGEND_ITEM ||
-			buffer[0] == LEGEND_ITEMDEFAULT
+			buffer[0] == LEGEND_ITEM_DEFAULT
 		) {
 			ret++;
 		}
 	}
 	
+	VERBOSE_PRINTF("Got item count: %zu\n", ret);
+	
 	fseek(fileInput, prevPos, SEEK_SET);
 	return ret;
 }
 
-static inline unsigned int initFiles(FILE *files[]) {
-	unsigned int i;
-	unsigned int ret = 0;
-	
-	for (i = 0; i < MAX_OUTPUTS && outNames[i] != NULL; i++) {
-		if (file_open(
-			&files[i],
-			outNames[i],
-			"w"
-		)) {
-			return 0;
-		}
-		
-		fprintf(files[i], AUTOGEN_TEXT);
-		ret++;
-	}
-	
-	if (!ret) {
-		fprintf(stderr, "ERROR: All files are NULL\n");
-		return 0;
-	}
-	return ret;
-}
-
-int getOutputs(char *str) {
-	unsigned char j;
-	unsigned int i = 0;
-	unsigned int k;
-	
-	for (k = 0; k < MAX_OUTPUTS; k++) {
-		outNames[k] = NULL;
-	}
-	
-	for (k = 0; k < MAX_OUTPUTS; k++) {
-		for (j = 0; j < 2; j++) {
-			check = 0;
-			
-			for (i++; str[i]; i++) {
-				if (str[i] == '"') {
-					check = 1;
-					if (j == 0) {
-						outNames[k] = str + (i + 1);
-					} else {
-						str[i] = 0;
-					}
-					break;
-				} else if (
-					j == 0 &&
-					!whitespace(str[i])
-				) {
-					fprintf(stderr, "ERROR: Output contains non whitespace character\n");
-					return 1;
-				}
-			}
-			
-			if (!check) {
-				if (
-					j == 0 &&
-					k > 0
-				) {
-					break;
-				} else if (j != 0) {
-					fprintf(stderr, "ERROR: Output is missing end of string\n");
-				}
-				return 1;
-			}
-		}
-	}
-	return 0;
-}
-
 int errorMake_readFile(FILE *fileInput) {
 	char buffer[LENGTH_BUFFER] = { 0 };
-	unsigned int i;
-	unsigned int fileCount = 0;
-	unsigned int offset = 0;
-	unsigned int itemCount = getItemCount(fileInput);
+	unsigned char offset;
+	VOARRAY_TYPE_SIZE i;
 	size_t bufLen;
-	enum modes mode;
-	FILE *files[MAX_OUTPUTS];
-	settings_t settings = { 0 };
-	setting_t *tmpSet;
+	size_t itemCount = getItemCount(fileInput);
+	files_t files = { NULL, 1 };
+	variables_t outVars = { NULL, 1 };
+	variables_t vars = { NULL, 1 };
 	
 	if (fileInput == NULL) {
 		fprintf(stderr, "ERROR: Required argument is NULL\n");
 		return 1;
 	}
 	
-	for (i = 0; i < MAX_OUTPUTS; i++) {
-		files[i] = NULL;
-	}
+	VOARRAY_INIT(FILE *, files, 1);
+	VOARRAY_INIT(variable_t, vars, 1);
+	VOARRAY_INIT(variable_t, outVars, 1);
 	
 	while (fgets(buffer, LENGTH_BUFFER, fileInput) != NULL) {
 		offset = 0;
@@ -126,10 +57,10 @@ int errorMake_readFile(FILE *fileInput) {
 		if (
 			(
 				buffer[0] != LEGEND_OUTPUT &&
-				buffer[0] != LEGEND_SETTING &&
+				buffer[0] != LEGEND_VARIABLE &&
 				buffer[0] != LEGEND_COMMENT
 			) &&
-			!fileCount
+			!files.length
 		) {
 			fprintf(stderr, "ERROR: No output files have been specified\n");
 			return 1;
@@ -137,58 +68,37 @@ int errorMake_readFile(FILE *fileInput) {
 		
 		switch (buffer[0]) {
 			case LEGEND_OUTPUT:
-				for (i = 0; i < MAX_OUTPUTS; i++) {
-					if (files[i] != NULL) {
-						fclose(files[i]);
-					}
-				}
-				if (getOutputs(buffer)) {
+				if (variable_getStr(&outVars, buffer)) {
 					return 1;
 				}
+				file_open(
+					&files.i[files.length - 1],
+					outVars.i[outVars.length - 2].value,
+					"w"
+				);
+				VERBOSE_PRINTF("Increasing file list size...\n");
+				files.length++;
+				VOARRAY_RESIZE(FILE *, files, 1);
 				
-				fileCount = initFiles(files);
-				
-				if (!fileCount) {
-					return 1;
-				}
+				VERBOSE_PRINTF("Increased file list size\n");
 				break;
-			case LEGEND_SETTING:
-				if (setting_getStr(&settings, buffer)) {
+			case LEGEND_VARIABLE:
+				if (variable_getStr(&vars, buffer)) {
 					return 1;
-				}
-				
-				if (strncmp(
-					buffer + 1,
-					SETTING_MODE,
-					LENGTH_BUFFER - 1
-				) == 0) {
-					tmpSet = setting_find(&settings, SETTING_MODE);
-					
-					if (tmpSet == NULL) {
-						fprintf(stderr, "ERROR: \"" SETTING_MODE "\" isn't set\n");
-						return 1;
-					}
-					
-					if (mode_getStr(
-						tmpSet->value,
-						&mode
-					)) {
-						return 1;
-					}
 				}
 				break;
 			case LEGEND_ITEM:
-			case LEGEND_ITEMDEFAULT:
+			case LEGEND_ITEM_DEFAULT:
 				if (item_addFile(
-					files,
-					fileCount,
-					itemCount,
 					buffer,
-					mode,
-					&settings
+					&files,
+					&outVars,
+					&vars
 				)) {
 					return 1;
 				}
+				break;
+			case LEGEND_ITEM_OUT:
 				break;
 			case LEGEND_COMMENT:
 				break;
@@ -196,20 +106,20 @@ int errorMake_readFile(FILE *fileInput) {
 				offset = 1;
 			default:
 				bufLen = strlen(buffer + offset);
-				for (i = 0; i < fileCount; i++) {
+				for (i = 0; i < files.length - 1; i++) {
 					fwrite(
 						buffer + offset,
 						sizeof(char),
 						bufLen,
-						files[i]
+						files.i[i]
 					);
 				}
 				break;
 		}
 	}
 	
-	for (i = 0; i < fileCount; i++) {
-		fclose(files[i]);
-	}
+	VOARRAY_UNINIT(outVars);
+	VOARRAY_UNINIT(vars);
+	VOARRAY_UNINIT(files);
 	return 0;
 }
