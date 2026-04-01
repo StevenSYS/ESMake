@@ -1,25 +1,26 @@
 " Vim syntax file
 " Language: ESMake
 " Maintainer: StevenSYS
-" Last Change: 23-03-2026
 
 if exists("b:current_syntax")
 	finish
 endif
 
-runtime! syntax/c.vim
+" Region
+syn region emString start="\"" end="\""
 
-syn match emVariable "^[%>]\S\+"
-syn match emItem "^[+-]\S\+"
-syn match emItemOut "^|\S\+"
-syn match emEscape "^\\.\+"
-syn region emComment start="^!" skip="\\$" end="$"
+" Match
+syn match emComment "//.\+"
+syn match emNumber " [0-9]\+"
 
-" Settings
-hi def link emVariable keyword
-hi def link emItem structure
-hi def link emItemOut function
-hi def link emEscape special
+" Keyword
+syn keyword emVarType vo s8 u8 s16 u16 s32 u32 str obj arr
+
+hi def link emString string
+
 hi def link emComment comment
+" hi def link emNumber number
+
+hi def link emVarType structure
 
 let b:current_syntax = "esmake"

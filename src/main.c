@@ -2,11 +2,7 @@
 #include <string.h>
 
 #include "file.h"
-#include "item.h"
 #include "progInfo.h"
-#include "errorMake.h"
-
-extern char verbose_enabled;
 
 int main(
 	int argc,
@@ -19,15 +15,6 @@ int main(
 		return 1;
 	}
 	
-	item_preInit();
-	
-	if (
-		argc > 2 &&
-		strcmp(argv[2], ARGUMENT_VERBOSE) == 0
-	) {
-		verbose_enabled = 1;
-	}
-	
 	if (file_open(
 		&fileInput,
 		argv[1],
@@ -36,9 +23,9 @@ int main(
 		return 1;
 	}
 	
-	if (errorMake_readFile(fileInput)) {
+	/*if (errorMake_readFile(fileInput)) {
 		return 1;
-	}
+	}*/
 	
 	fclose(fileInput);
 	return 0;

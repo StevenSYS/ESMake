@@ -1,37 +1,29 @@
 #ifndef __VARIABLE__
 #define __VARIABLE__
 
-#include "VoArray/voArray.h"
-
 /* Macros */
-#define VARIABLE_LENGTH 10
-#define VARIABLE_LENGTH_STRING 100
+#define LENGTH_VARTYPE 10
+#define LENGTH_BUFFER 255
+
+/* Enums */
+enum variable_types {
+	VARTYPE_VO,
+	VARTYPE_S8,
+	VARTYPE_U8,
+	VARTYPE_S16,
+	VARTYPE_U16,
+	VARTYPE_S32,
+	VARTYPE_U32,
+	VARTYPE_STR,
+	VARTYPE_OBJ,
+	VARTYPE_ARR
+};
 
 /* Structs */
 typedef struct {
-	char name[VARIABLE_LENGTH_STRING];
-	char value[VARIABLE_LENGTH_STRING];
+	enum variable_types type;
+	char name[LENGTH_BUFFER];
+	void *value;
 } variable_t;
-
-/* VoArrays */
-VOARRAY(variables_t, variable_t);
-
-/* Functions */
-int variable_add(
-	variables_t *vars,
-	const variable_t *var
-);
-
-variable_t *variable_find(
-	variables_t *vars,
-	const char *find,
-	VOARRAY_TYPE_SIZE *position
-);
-
-int variable_getStr(
-	variables_t *vars,
-	char *str,
-	VOARRAY_TYPE_SIZE *position
-);
 
 #endif
