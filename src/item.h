@@ -8,11 +8,18 @@
 #include "variable.h"
 
 /* Functions */
-int item_addFile(
-	const char *buffer,
+void item_preInit();
+int item_init(
 	files_t *files,
 	variables_t *outVars,
 	variables_t *vars
+);
+
+int item_cleanName(char *str);
+int item_add(
+	const char *name,
+	char def,
+	size_t count
 );
 
 #endif

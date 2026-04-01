@@ -9,7 +9,7 @@ int variable_add(
 	variables_t *vars,
 	const variable_t *var
 ) {
-	VERBOSE_PRINTF("%s - Adding variable to variable list...\n", var->name);
+	VERBOSE_PRINTF("%s - Adding variable to variable list\n", var->name);
 	strncpy(
 		vars->i[vars->length - 1].name,
 		var->name,
@@ -22,7 +22,7 @@ int variable_add(
 	);
 	VERBOSE_PRINTF("%s - Added variable to variable list\n", var->name);
 	
-	VERBOSE_PRINTF("%s - Increasing variable list size...\n", var->name);
+	VERBOSE_PRINTF("%s - Increasing variable list size\n", var->name);
 	vars->length++;
 	VOARRAY_RESIZE(variable_t, (*vars), 1);
 	VERBOSE_PRINTF("%s - Increased variable list size: %zu\n", var->name, vars->length);
@@ -31,11 +31,12 @@ int variable_add(
 
 variable_t *variable_find(
 	variables_t *variables,
-	const char *find
+	const char *find,
+	VOARRAY_TYPE_SIZE *position
 ) {
 	VOARRAY_TYPE_SIZE i;
 	
-	VERBOSE_PRINTF("%s - Searching for variable in variable list...\n", find);
+	VERBOSE_PRINTF("%s - Searching for variable in variable list\n", find);
 	
 	for (i = 0; i < variables->length; i++) {
 		if (strncmp(
@@ -44,6 +45,9 @@ variable_t *variable_find(
 			VARIABLE_LENGTH_STRING
 		) == 0) {
 			VERBOSE_PRINTF("%s - Found variable in variable list\n", find);
+			if (position != NULL) {
+				*position = i;
+			}
 			return &variables->i[i];
 		}
 	}
@@ -54,7 +58,8 @@ variable_t *variable_find(
 
 int variable_getStr(
 	variables_t *variables,
-	char *str
+	char *str,
+	VOARRAY_TYPE_SIZE *position
 ) {
 	char check = 0;
 	char *value;
@@ -111,9 +116,16 @@ int variable_getStr(
 		}
 	}
 	
-	tmpVarPtr = variable_find(variables, tmpVar.name);
+	tmpVarPtr = variable_find(
+		variables,
+		tmpVar.name,
+		position
+	);
 	
 	if (tmpVarPtr == NULL) {
+		if (position != NULL) {
+			*position = variables->length - 1;
+		}
 		variable_add(variables, &tmpVar);
 	} else {
 		strncpy(

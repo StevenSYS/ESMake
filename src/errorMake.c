@@ -15,7 +15,7 @@ static inline size_t getItemCount(FILE *fileInput) {
 	size_t ret = 0;
 	long int prevPos = ftell(fileInput);
 	
-	VERBOSE_PRINTF("Getting item count...\n");
+	VERBOSE_PRINTF("Getting item count\n");
 	
 	while (fgets(buffer, LENGTH_BUFFER, fileInput) != NULL) {
 		if (
@@ -34,10 +34,11 @@ static inline size_t getItemCount(FILE *fileInput) {
 
 int errorMake_readFile(FILE *fileInput) {
 	char buffer[LENGTH_BUFFER] = { 0 };
+	char itemName[LENGTH_BUFFER] = { 0 };
 	unsigned char offset;
-	VOARRAY_TYPE_SIZE i;
 	size_t bufLen;
 	size_t itemCount = getItemCount(fileInput);
+	VOARRAY_TYPE_SIZE i = 0;
 	files_t files = { NULL, 1 };
 	variables_t outVars = { NULL, 1 };
 	variables_t vars = { NULL, 1 };
@@ -51,7 +52,17 @@ int errorMake_readFile(FILE *fileInput) {
 	VOARRAY_INIT(variable_t, vars, 1);
 	VOARRAY_INIT(variable_t, outVars, 1);
 	
+	files.i[0] = NULL;
+	
 	while (fgets(buffer, LENGTH_BUFFER, fileInput) != NULL) {
+		if (item_init(
+			&files,
+			&outVars,
+			&vars
+		)) {
+			return 1;
+		}
+		
 		offset = 0;
 		
 		if (
@@ -60,7 +71,7 @@ int errorMake_readFile(FILE *fileInput) {
 				buffer[0] != LEGEND_VARIABLE &&
 				buffer[0] != LEGEND_COMMENT
 			) &&
-			!files.length
+			!(files.length - 1)
 		) {
 			fprintf(stderr, "ERROR: No output files have been specified\n");
 			return 1;
@@ -68,37 +79,58 @@ int errorMake_readFile(FILE *fileInput) {
 		
 		switch (buffer[0]) {
 			case LEGEND_OUTPUT:
-				if (variable_getStr(&outVars, buffer)) {
+				if (variable_getStr(
+					&outVars,
+					buffer,
+					&i
+				)) {
 					return 1;
 				}
+				
 				file_open(
-					&files.i[files.length - 1],
-					outVars.i[outVars.length - 2].value,
+					&files.i[i],
+					outVars.i[i].value,
 					"w"
 				);
-				VERBOSE_PRINTF("Increasing file list size...\n");
-				files.length++;
-				VOARRAY_RESIZE(FILE *, files, 1);
 				
-				VERBOSE_PRINTF("Increased file list size\n");
+				if ((files.length - 1) == i) {
+					VERBOSE_PRINTF("Increasing file list size\n");
+					files.length++;
+					VOARRAY_RESIZE(FILE *, files, 1);
+					files.i[files.length - 1] = NULL;
+					
+					VERBOSE_PRINTF("Increased file list size\n");
+				}
 				break;
 			case LEGEND_VARIABLE:
-				if (variable_getStr(&vars, buffer)) {
+				if (variable_getStr(&vars, buffer, NULL)) {
 					return 1;
 				}
 				break;
 			case LEGEND_ITEM:
 			case LEGEND_ITEM_DEFAULT:
-				if (item_addFile(
-					buffer,
-					&files,
-					&outVars,
-					&vars
+				offset = 1;
+				
+				if (item_cleanName(buffer + offset)) {
+					return 1;
+				}
+				
+				strncpy(
+					itemName,
+					buffer + offset,
+					LENGTH_BUFFER - offset
+				);
+				
+				if (item_add(
+					itemName,
+					(buffer[0] == LEGEND_ITEM_DEFAULT),
+					itemCount
 				)) {
 					return 1;
 				}
 				break;
 			case LEGEND_ITEM_OUT:
+				// printf("%s\n", itemName);
 				break;
 			case LEGEND_COMMENT:
 				break;
@@ -115,6 +147,12 @@ int errorMake_readFile(FILE *fileInput) {
 					);
 				}
 				break;
+		}
+	}
+	
+	for (i = 0; i < files.length - 1; i++) {
+		if (files.i[i] != NULL) {
+			fclose(files.i[i]);
 		}
 	}
 	

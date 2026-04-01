@@ -22,14 +22,16 @@ int variable_add(
 	const variable_t *var
 );
 
-int variable_getStr(
-	variables_t *vars,
-	char *str
-);
-
 variable_t *variable_find(
 	variables_t *vars,
-	const char *find
+	const char *find,
+	VOARRAY_TYPE_SIZE *position
+);
+
+int variable_getStr(
+	variables_t *vars,
+	char *str,
+	VOARRAY_TYPE_SIZE *position
 );
 
 #endif

@@ -13,11 +13,11 @@
 ! | |      | Item - Lang Output          |
 ! | !      | Comment                     |
 ! | \      | Escape                      |
-
--EXAMPLE
++EXAMPLE
 |lang "lang - Example error"
 |lang2 "lang2 - Example error"
 
-+EXAMPLE2
-|lang "lang - Example error 2"
-|lang2 "lang2 - Example error 2"
+/* This item is the default in the return switch */
+-DEFEXAMPLE
+|lang "lang - Default error"
+|lang2 "lang2 - Default error"

@@ -2,7 +2,16 @@
 #define __PROGINFO__
 
 /* - Program - */
+#ifndef PROGRAM_PRE_RELEASE
+	#define PROGRAM_PRE_RELEASE 1
+#endif
+
 #define PROGRAM_NAME "@PROJECT_NAME@"
+#if PROGRAM_PRE_RELEASE
+	#define PROGRAM_VERSION "@PROJECT_VERSION@pre"
+#else
+	#define PROGRAM_VERSION "@PROJECT_VERSION@"
+#endif
 
 /* - Length - */
 #define LENGTH_BUFFER 255
@@ -20,18 +29,13 @@
 #define TYPE_ENUM "enum"
 #define TYPE_LANG "lang"
 
-/* - Variable - */
-#define VARIABLE_MODE "mode"
-#define VARIABLE_PREENUM "preEnum"
-#define VARIABLE_PRELANG "preLang"
-
 /* - Argument - */
 #define ARGUMENT_VERBOSE "-v"
 
 /* - Misc. - */
 #define AUTOGEN_TEXT \
 	"/*\n" \
-	"	Generated with " PROGRAM_NAME ",\n" \
+	"	Generated with " PROGRAM_NAME " v" PROGRAM_VERSION ",\n" \
 	"	do not modify this file directly.\n" \
 	"*/\n"
 

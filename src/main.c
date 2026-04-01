@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "file.h"
+#include "item.h"
 #include "progInfo.h"
 #include "errorMake.h"
 
@@ -17,6 +18,8 @@ int main(
 		fprintf(stderr, "ERROR: File wasn't specified\n");
 		return 1;
 	}
+	
+	item_preInit();
 	
 	if (
 		argc > 2 &&

@@ -7,9 +7,14 @@ int file_open(
 	const char *filename,
 	const char *mode
 ) {
+	if (*output != NULL) {
+		VERBOSE_PRINTF("Output pointer had an already open file, closing\n");
+		fclose(*output);
+	}
+	
 	*output = fopen(filename, mode);
 	
-	VERBOSE_PRINTF("%s (%s) - Opening file...\n", filename, mode);
+	VERBOSE_PRINTF("%s (%s) - Opening file\n", filename, mode);
 	
 	if (*output == NULL) {
 		perror("ERROR: Failed to open file");
