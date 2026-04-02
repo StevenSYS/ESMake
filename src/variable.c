@@ -19,14 +19,12 @@
 			fprintf(stderr, STR_ERROR_FILE_READ); \
 			return 1; \
 		} \
-		\
-		if (!isspace(byte[0])) { \
-			fseek(file, position, SEEK_SET); \
-			break; \
-		} \
-	} while (!isspace(byte[0])); \
+	} while ( \
+		!byte[0] || \
+		isspace(byte[0]) \
+	); \
+	fseek(file, -1, SEEK_CUR); \
 	byte[0] = 0;
-
 
 const char *variable_typeNames[VARTYPE_COUNT] = {
 	"vo",
@@ -39,7 +37,9 @@ const char *variable_typeNames[VARTYPE_COUNT] = {
 	"flt",
 	"dou",
 	"str",
-	"obj"
+	"obj",
+	
+	"au"
 };
 
 int variable_init(

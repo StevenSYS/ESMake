@@ -19,6 +19,8 @@ enum variable_types {
 	VARTYPE_STR,
 	VARTYPE_OBJ,
 	
+	VARTYPE_AU,
+	
 	VARTYPE_COUNT
 };
 
