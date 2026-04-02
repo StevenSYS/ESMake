@@ -61,15 +61,26 @@ void variable_clearObj(varObj_t *object);
 variable_t *variable_addObj(
 	varObj_t *object,
 	variable_t *var,
-	VOARRAY_TYPE_SIZE *position
+	VOARRAY_TYPE_SIZE *i
 );
 
 variable_t *variable_findObj(
 	varObj_t *object,
 	const char *name,
-	VOARRAY_TYPE_SIZE *position
+	VOARRAY_TYPE_SIZE *i
 );
 
 int variable_uninitObj(varObj_t *object);
+
+/* From File */
+int variable_getFile(
+	FILE *file,
+	variable_t *var
+);
+
+#ifndef VARIABLE_NOEXTERNS
+/* Externs */
+extern const char *variable_typeNames[VARTYPE_COUNT];
+#endif
 
 #endif

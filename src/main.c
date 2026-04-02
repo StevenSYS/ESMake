@@ -2,13 +2,15 @@
 #include <string.h>
 
 #include "file.h"
+#include "variable.h"
 #include "progInfo.h"
 
 int main(
 	int argc,
 	char *argv[]
 ) {
-	FILE *fileInput;
+	FILE *file;
+	variable_t var;
 	
 	if (argc < 2) {
 		fprintf(stderr, "ERROR: File wasn't specified\n");
@@ -16,17 +18,28 @@ int main(
 	}
 	
 	if (file_open(
-		&fileInput,
+		&file,
 		argv[1],
 		"r"
 	)) {
 		return 1;
 	}
 	
-	/*if (errorMake_readFile(fileInput)) {
+	if (variable_getFile(file, &var)) {
+		return 1;
+	}
+	
+	printf(
+		"Type: \"%s\"\n"
+		"Name: \"%s\"\n",
+		variable_typeNames[var.type],
+		var.name
+	);
+	
+	/*if (errorMake_readFile(file)) {
 		return 1;
 	}*/
 	
-	fclose(fileInput);
+	fclose(file);
 	return 0;
 }

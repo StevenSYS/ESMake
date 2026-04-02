@@ -1,17 +1,53 @@
+#define VARIABLE_NOEXTERNS
 #include <stdio.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "variable.h"
+#include "progInfo.h"
 
 #define STR_ERROR_REQUIRED_ARGS "ERROR: Required argument(s) is/are NULL\n"
+#define STR_ERROR_FILE_READ "ERROR: Failed to read from file\n"
+#define STR_ERROR_VAR_TYPE_UNKNOWN "ERROR: Unknown variable type: %s\n"
+#define STR_ERROR_VAR_NAME "ERROR: Failed to get variable name\n"
+
+#define SKIP_SPACE() \
+	byte[0] = 0; \
+	do { \
+		if (!fread(byte, sizeof(char), 1, file)) { \
+			fprintf(stderr, STR_ERROR_FILE_READ); \
+			return 1; \
+		} \
+		\
+		if (!isspace(byte[0])) { \
+			fseek(file, position, SEEK_SET); \
+			break; \
+		} \
+	} while (!isspace(byte[0])); \
+	byte[0] = 0;
+
+
+const char *variable_typeNames[VARTYPE_COUNT] = {
+	"vo",
+	"s8",
+	"u8",
+	"s16",
+	"u16",
+	"s32",
+	"u32",
+	"flt",
+	"dou",
+	"str",
+	"obj"
+};
 
 int variable_init(
 	variable_t *var,
 	size_t nameSize,
 	size_t valSize
 ) {
-	if (var = NULL) {
+	if (var == NULL) {
 		fprintf(stderr, STR_ERROR_REQUIRED_ARGS);
 		return 1;
 	}
@@ -67,54 +103,54 @@ void variable_clearObj(varObj_t *object) {
 variable_t *variable_addObj(
 	varObj_t *object,
 	variable_t *var,
-	VOARRAY_TYPE_SIZE *position
+	VOARRAY_TYPE_SIZE *i
 ) {
 	if (
 		object == NULL ||
 		var == NULL ||
-		position == NULL
+		i == NULL
 	) {
 		fprintf(stderr, STR_ERROR_REQUIRED_ARGS);
 		return NULL;
 	}
 	
-	for (*position = 0; *position < object->length; *position++) {
-		if (!object->i[*position].used) {
+	for (*i = 0; *i < object->length; *i++) {
+		if (!object->i[*i].used) {
 			break;
 		}
 	}
 	
-	object->i[*position].used = 1;
-	object->i[*position].type = var->type;
-	object->i[*position].name = var->name;
-	object->i[*position].value.ptr = var->value.ptr;
+	object->i[*i].used = 1;
+	object->i[*i].type = var->type;
+	object->i[*i].name = var->name;
+	object->i[*i].value.ptr = var->value.ptr;
 	
 	object->length++;
 	VOARRAY_RESIZE(variable_t, (*object), NULL);
-	return &object->i[*position];
+	return &object->i[*i];
 }
 
 variable_t *variable_findObj(
 	varObj_t *object,
 	const char *name,
-	VOARRAY_TYPE_SIZE *position
+	VOARRAY_TYPE_SIZE *i
 ) {
 	if (
 		object == NULL ||
 		name == NULL ||
-		position == NULL
+		i == NULL
 	) {
 		fprintf(stderr, STR_ERROR_REQUIRED_ARGS);
 		return NULL;
 	}
 	
-	if (*position > (object->length - 1)) {
-		*position = 0;
+	if (*i > (object->length - 1)) {
+		*i = 0;
 	}
 	
-	for (; *position < (object->length - 1); *position++) {
-		if (strcmp(object->i[*position].name, name) == 0) {
-			return &object->i[*position];
+	for (; *i < (object->length - 1); *i++) {
+		if (strcmp(object->i[*i].name, name) == 0) {
+			return &object->i[*i];
 		}
 	}
 	return NULL;
@@ -132,5 +168,86 @@ int variable_uninitObj(varObj_t *object) {
 		variable_uninit(&object->i[i]);
 	}
 	VOARRAY_UNINIT((*object));
+	return 0;
+}
+
+/* From File */
+int variable_getFile(
+	FILE *file,
+	variable_t *var
+) {
+	char check = 0;
+	char byte[2] = { 0, 0 };
+	char buffer[LENGTH_BUFFER] = { 0 };
+	size_t position;
+	VOARRAY_TYPE_SIZE i = 0;
+	
+	position = ftell(file);
+	
+	SKIP_SPACE();
+	
+	do {
+		if (byte[0]) {
+			buffer[i] = byte[0];
+			i++;
+		}
+		
+		if (!fread(byte, sizeof(char), 1, file)) {
+			fprintf(stderr, STR_ERROR_FILE_READ);
+			return 1;
+		}
+	} while (!isspace(byte[0]));
+	
+	for (i = 0; i < VARTYPE_COUNT; i++) {
+		if (strcmp(buffer, variable_typeNames[i]) == 0) {
+			check = 1;
+			var->type = (enum variable_types)i;
+			break;
+		}
+	}
+	
+	if (!check) {
+		fprintf(stderr, STR_ERROR_VAR_TYPE_UNKNOWN, buffer);
+		return 1;
+	}
+	
+	position = ftell(file);
+	
+	check = 0;
+	
+	name:
+	i = 0;
+	
+	fseek(file, position, SEEK_SET);
+	
+	SKIP_SPACE();
+	
+	do {
+		if (byte[0]) {
+			if (check) {
+				var->name[i] = byte[0];
+			}
+			i++;
+		}
+		
+		if (!fread(byte, sizeof(char), 1, file)) {
+			fprintf(stderr, STR_ERROR_FILE_READ);
+			return 1;
+		}
+	} while (!isspace(byte[0]));
+	
+	if (!i) {
+		fprintf(stderr, STR_ERROR_VAR_NAME);
+		return 1;
+	}
+	
+	if (!check) {
+		var->name = malloc(
+			sizeof(char[i])
+		);
+		
+		check = 1;
+		goto name;
+	}
 	return 0;
 }
