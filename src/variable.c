@@ -199,7 +199,11 @@ int variable_getFile(
 	} while (!isspace(byte[0]));
 	
 	for (i = 0; i < VARTYPE_COUNT; i++) {
-		if (strcmp(buffer, variable_typeNames[i]) == 0) {
+		if (strncmp(
+			buffer,
+			variable_typeNames[i],
+			LENGTH_BUFFER
+		) == 0) {
 			check = 1;
 			var->type = (enum variable_types)i;
 			break;

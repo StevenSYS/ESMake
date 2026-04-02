@@ -14,7 +14,7 @@ syn match emComment "//.\+"
 syn match emNumber "\<\d\+\(_\d\+\)*\>"
 
 " Keyword
-syn keyword emVarType vo s8 u8 s16 u16 s32 u32 flt dou str obj
+syn keyword emVarType vo s8 u8 s16 u16 s32 u32 flt dou str obj au
 
 hi def link emString string
 
