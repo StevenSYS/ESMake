@@ -63,13 +63,13 @@ void variable_clearObj(varObj_t *object);
 variable_t *variable_addObj(
 	varObj_t *object,
 	variable_t *var,
-	VOARRAY_TYPE_SIZE *i
+	VOARRAY_TYPE_SIZE *position
 );
 
 variable_t *variable_findObj(
 	varObj_t *object,
 	const char *name,
-	VOARRAY_TYPE_SIZE *i
+	VOARRAY_TYPE_SIZE *position
 );
 
 int variable_uninitObj(varObj_t *object);
