@@ -40,6 +40,8 @@ int main(
 		return 1;
 	}*/
 	
+	variable_uninit(&var);
+	
 	fclose(file);
 	return 0;
 }

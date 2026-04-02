@@ -91,6 +91,11 @@ void variable_uninit(variable_t *var) {
 void variable_clearObj(varObj_t *object) {
 	VOARRAY_TYPE_SIZE i;
 	
+	if (object == NULL) {
+		fprintf(stderr, STR_ERROR_REQUIRED_ARGS);
+		return;
+	}
+	
 	for (i = 0; i < object->length; i++) {
 		object->i[i].used = 0;
 		object->i[i].type = VARTYPE_VO;
@@ -103,55 +108,75 @@ void variable_clearObj(varObj_t *object) {
 variable_t *variable_addObj(
 	varObj_t *object,
 	variable_t *var,
-	VOARRAY_TYPE_SIZE *i
+	VOARRAY_TYPE_SIZE *position
 ) {
+	VOARRAY_TYPE_SIZE i = 0;
+	
 	if (
 		object == NULL ||
-		var == NULL ||
-		i == NULL
+		var == NULL
 	) {
 		fprintf(stderr, STR_ERROR_REQUIRED_ARGS);
 		return NULL;
 	}
 	
-	for (*i = 0; *i < object->length; *i++) {
-		if (!object->i[*i].used) {
+	if (
+		position != NULL &&
+		*position < object->length
+	) {
+		i = *position;
+	}
+	
+	for (; i < object->length; i++) {
+		if (!object->i[i].used) {
 			break;
 		}
 	}
 	
-	object->i[*i].used = 1;
-	object->i[*i].type = var->type;
-	object->i[*i].name = var->name;
-	object->i[*i].value.ptr = var->value.ptr;
+	object->i[i].used = 1;
+	object->i[i].type = var->type;
+	object->i[i].name = var->name;
+	object->i[i].value.ptr = var->value.ptr;
 	
 	object->length++;
 	VOARRAY_RESIZE(variable_t, (*object), NULL);
-	return &object->i[*i];
+	
+	if (position != NULL) {
+		*position = i;
+	}
+	return &object->i[i];
 }
 
 variable_t *variable_findObj(
 	varObj_t *object,
 	const char *name,
-	VOARRAY_TYPE_SIZE *i
+	VOARRAY_TYPE_SIZE *position
 ) {
+	VOARRAY_TYPE_SIZE i = 0;
+	
 	if (
 		object == NULL ||
-		name == NULL ||
-		i == NULL
+		name == NULL
 	) {
 		fprintf(stderr, STR_ERROR_REQUIRED_ARGS);
 		return NULL;
 	}
 	
-	if (*i > (object->length - 1)) {
-		*i = 0;
+	if (
+		position != NULL &&
+		*position < object->length
+	) {
+		i = *position;
 	}
 	
-	for (; *i < (object->length - 1); *i++) {
-		if (strcmp(object->i[*i].name, name) == 0) {
-			return &object->i[*i];
+	for (; i < (object->length - 1); i++) {
+		if (strcmp(object->i[i].name, name) == 0) {
+			return &object->i[i];
 		}
+	}
+	
+	if (position != NULL) {
+		*position = i;
 	}
 	return NULL;
 }
@@ -181,6 +206,14 @@ int variable_getFile(
 	char buffer[LENGTH_BUFFER] = { 0 };
 	size_t position;
 	VOARRAY_TYPE_SIZE i = 0;
+	
+	if (
+		file == NULL ||
+		var == NULL
+	) {
+		fprintf(stderr, STR_ERROR_REQUIRED_ARGS);
+		return 1;
+	}
 	
 	position = ftell(file);
 	
