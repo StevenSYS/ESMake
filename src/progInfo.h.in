@@ -16,22 +16,6 @@
 /* - Length - */
 #define LENGTH_BUFFER 255
 
-/* - Legend - */
-#define LEGEND_OUTPUT '>'
-#define LEGEND_VARIABLE '%'
-#define LEGEND_ITEM '+'
-#define LEGEND_ITEM_DEFAULT '-'
-#define LEGEND_ITEM_OUT '|'
-#define LEGEND_COMMENT '!'
-#define LEGEND_ESCAPE '\\'
-
-/* - Type - */
-#define TYPE_ENUM "enum"
-#define TYPE_LANG "lang"
-
-/* - Argument - */
-#define ARGUMENT_VERBOSE "-v"
-
 /* - Misc. - */
 #define AUTOGEN_TEXT \
 	"/*\n" \

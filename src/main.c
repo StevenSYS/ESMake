@@ -36,10 +36,6 @@ int main(
 		var.name
 	);
 	
-	/*if (errorMake_readFile(file)) {
-		return 1;
-	}*/
-	
 	variable_uninit(&var);
 	
 	fclose(file);

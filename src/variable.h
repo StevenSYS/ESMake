@@ -5,23 +5,29 @@
 
 #include "VoArray/voArray.h"
 
+/* Macros */
+
+/* - Char - */
+#define VARIABLE_CHAR_END ';'
+
 /* Enums */
 enum variable_types {
-	VARTYPE_VO,
-	VARTYPE_S8,
-	VARTYPE_U8,
-	VARTYPE_S16,
-	VARTYPE_U16,
-	VARTYPE_S32,
-	VARTYPE_U32,
-	VARTYPE_FLT,
-	VARTYPE_DOU,
-	VARTYPE_STR,
-	VARTYPE_OBJ,
+	VARTYPE_VO,  // void
+	VARTYPE_S8,  // int8_t
+	VARTYPE_U8,  // uint8_t
+	VARTYPE_S16, // int16_t
+	VARTYPE_U16, // uint16_t
+	VARTYPE_S32, // int32_t
+	VARTYPE_U32, // uint32_t
+	VARTYPE_FLT, // float
+	VARTYPE_DOU, // double
+	VARTYPE_STR, // char *
+	VARTYPE_OBJ, // varObj_t
 	
-	VARTYPE_AU,
+	VARTYPE_COUNT,
 	
-	VARTYPE_COUNT
+	/* Specials */
+	VARTYPE_UNSET
 };
 
 /* VoArrays */
@@ -30,6 +36,7 @@ VOARRAY(varObj_t, struct variable_s);
 /* Structs */
 typedef struct variable_s {
 	char used;
+	unsigned char flags;
 	enum variable_types type;
 	char *name;
 	union {
