@@ -1,7 +1,8 @@
-u8 testU8 10;
+num testNum 10;
 str testString "Testing";
+!
 obj testArray {
-	nn u8 5;
-	nn u8 10;
+	nn num 5;
+	nn num 10;
 	nn str "510";
 };

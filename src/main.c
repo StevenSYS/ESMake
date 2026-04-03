@@ -9,6 +9,7 @@ int main(
 	int argc,
 	char *argv[]
 ) {
+	int result = 0;
 	FILE *file;
 	variable_t var;
 	
@@ -25,18 +26,30 @@ int main(
 		return 1;
 	}
 	
-	if (variable_getFile(file, &var)) {
+	getVar:
+	result = variable_getFile(file, &var);
+	
+	if (result > 0) {
 		return 1;
 	}
 	
-	printf(
-		"Type: \"%s\"\n"
-		"Name: \"%s\"\n",
-		variable_typeNames[var.type],
-		var.name
-	);
-	
-	variable_uninit(&var);
+	if (result == 0) {
+		printf(
+			"Type: \"%s\"\n"
+			"Name: \"%s\"\n",
+			variable_typeNames[var.type],
+			var.name
+		);
+		
+		if (var.type == VARTYPE_STR) {
+			printf("Value: %s\n", var.value.str);
+		} else {
+			printf("Value: %d\n", *var.value.num);
+		}
+		
+		variable_uninit(&var);
+		goto getVar;
+	}
 	
 	fclose(file);
 	return 0;

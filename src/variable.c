@@ -9,28 +9,32 @@
 #include "progInfo.h"
 #include "errorString.h"
 
-#define SKIP_SPACE() \
-	byte[0] = 0; \
+#define FREADEC(_ptr, _size, _count, _file) \
+	if (!fread(_ptr, _size, _count, _file)) { \
+		fprintf(stderr, STR_ERROR_FILE_READ); \
+		return 1; \
+	}
+
+#define SKIPSPACE() \
+	byte = 0; \
 	do { \
-		if (!fread(byte, sizeof(char), 1, file)) { \
-			fprintf(stderr, STR_ERROR_FILE_READ); \
-			return 1; \
+		byte = getc(file); \
+		if ( \
+			byte == EOF || \
+			byte == VARIABLE_CHAR_STOP \
+		) { \
+			return -1; \
 		} \
 	} while ( \
-		!byte[0] || \
-		isspace(byte[0]) \
+		!byte || \
+		isspace(byte) \
 	); \
 	fseek(file, -1, SEEK_CUR); \
-	byte[0] = 0;
+	byte = 0;
 
 const char *variable_typeNames[VARTYPE_COUNT] = {
 	"vo",
-	"s8",
-	"u8",
-	"s16",
-	"u16",
-	"s32",
-	"u32",
+	"num",
 	"flt",
 	"dou",
 	"str",
@@ -51,14 +55,10 @@ int variable_init(
 	
 	if (nameSize) {
 		var->name = malloc(nameSize);
-	} else {
-		var->name = NULL;
 	}
 	
 	if (valSize) {
 		var->value.ptr = malloc(valSize);
-	} else {
-		var->value.ptr = NULL;
 	}
 	return 0;
 }
@@ -210,8 +210,8 @@ int variable_getFile(
 	FILE *file,
 	variable_t *var
 ) {
+	char byte = 0;
 	char check = 0;
-	char byte[2] = { 0, 0 };
 	char buffer[LENGTH_BUFFER] = { 0 };
 	enum varFlags flag = VARFLAG_NONE;
 	size_t position;
@@ -233,19 +233,19 @@ int variable_getFile(
 	i = 0;
 	position = ftell(file);
 	
-	SKIP_SPACE();
+	SKIPSPACE();
 	
 	do {
-		if (byte[0]) {
-			buffer[i] = byte[0];
+		if (byte) {
+			buffer[i] = byte;
 			i++;
 		}
 		
-		if (!fread(byte, sizeof(char), 1, file)) {
-			fprintf(stderr, STR_ERROR_FILE_READ);
-			return 1;
-		}
-	} while (!isspace(byte[0]));
+		byte = getc(file);
+	} while (
+		byte &&
+		!isspace(byte)
+	);
 	
 	flag = varFlag_check(
 		buffer,
@@ -286,24 +286,24 @@ int variable_getFile(
 		
 		fseek(file, position, SEEK_SET);
 		
-		SKIP_SPACE();
+		SKIPSPACE();
 		
 		do {
 			if (
-				byte[0] &&
-				byte[0] != VARIABLE_CHAR_END
+				byte &&
+				byte != VARIABLE_CHAR_END
 			) {
 				if (check) {
-					var->name[i] = byte[0];
+					var->name[i] = byte;
 				}
 				i++;
 			}
 			
-			if (!fread(byte, sizeof(char), 1, file)) {
-				fprintf(stderr, STR_ERROR_FILE_READ);
-				return 1;
-			}
-		} while (!isspace(byte[0]));
+			byte = getc(file);
+		} while (
+			byte &&
+			!isspace(byte)
+		);
 		
 		if (!i) {
 			fprintf(stderr, STR_ERROR_VAR_NAME);
@@ -320,6 +320,107 @@ int variable_getFile(
 			check = 1;
 			goto name;
 		}
+	}
+	
+	position = ftell(file);
+	
+	i = 0;
+	check = 0;
+	byte = 0;
+	buffer[0] = 0;
+	
+	switch (var->type) {
+		case VARTYPE_NUM:
+			variable_init(
+				var,
+				0,
+				sizeof(uint8_t)
+			);
+			
+			do {
+				if (byte) {
+					buffer[i] = byte;
+					i++;
+				}
+				
+				byte = getc(file);
+			} while (
+				byte &&
+				byte != VARIABLE_CHAR_END &&
+				!isspace(byte)
+			);
+			
+			if (byte != VARIABLE_CHAR_END) {
+				fprintf(stderr, "§ERROR: Missing line end\n");
+				return 1;
+			}
+			
+			*var->value.num = (int32_t)atoi(buffer);
+			break;
+		case VARTYPE_STR:
+			do {
+				byte = getc(file);
+			} while (
+				byte &&
+				byte != VARIABLE_CHAR_STR &&
+				isspace(byte)
+			);
+			
+			if (byte != VARIABLE_CHAR_STR) {
+				fprintf(stderr, "§ERROR: Missing start of string\n");
+				return 1;
+			}
+			
+			position = ftell(file);
+			
+			do {
+				if (
+					byte &&
+					byte != VARIABLE_CHAR_STR
+				) {
+					i++;
+				}
+				byte = getc(file);
+			} while (
+				byte &&
+				byte != VARIABLE_CHAR_STR
+			);
+			
+			if (byte != VARIABLE_CHAR_STR) {
+				fprintf(stderr, "§ERROR: Missing end of string\n");
+				return 1;
+			}
+			
+			fseek(file, position, SEEK_SET);
+			
+			if (i) {
+				variable_init(
+					var,
+					0,
+					sizeof(char[i])
+				);
+				
+				FREADEC(var->value.str, sizeof(char), i, file);
+				var->value.str[i] = 0;
+			}
+			
+			fseek(file, 1, SEEK_CUR);
+			
+			do {
+				byte = getc(file);
+			} while (
+				byte &&
+				byte != VARIABLE_CHAR_END &&
+				isspace(byte)
+			);
+			
+			if (byte != VARIABLE_CHAR_END) {
+				fprintf(stderr, "§ERROR: Missing line end\n");
+				return 1;
+			}
+			break;
+		default:
+			break;
 	}
 	return 0;
 }

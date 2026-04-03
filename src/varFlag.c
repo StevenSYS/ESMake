@@ -1,3 +1,4 @@
+#define VARFLAG_NOEXTERNS
 #include <stdio.h>
 #include <string.h>
 

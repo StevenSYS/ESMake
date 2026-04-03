@@ -16,7 +16,6 @@ obj items {
 		str lang2 "lang2 - Example";
 	};
 	
-	// This is the default in the return switch
 	obj DEFEXAMPLE {
 		vo def;
 		str lang1 "lang1 - Default Example";

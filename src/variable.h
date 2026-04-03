@@ -8,17 +8,14 @@
 /* Macros */
 
 /* - Char - */
+#define VARIABLE_CHAR_STR '"'
 #define VARIABLE_CHAR_END ';'
+#define VARIABLE_CHAR_STOP '!'
 
 /* Enums */
 enum variable_types {
 	VARTYPE_VO,  // void
-	VARTYPE_S8,  // int8_t
-	VARTYPE_U8,  // uint8_t
-	VARTYPE_S16, // int16_t
-	VARTYPE_U16, // uint16_t
-	VARTYPE_S32, // int32_t
-	VARTYPE_U32, // uint32_t
+	VARTYPE_NUM, // int32_t
 	VARTYPE_FLT, // float
 	VARTYPE_DOU, // double
 	VARTYPE_STR, // char *
@@ -40,12 +37,7 @@ typedef struct variable_s {
 	enum variable_types type;
 	char *name;
 	union {
-		int8_t *s8;
-		uint8_t *u8;
-		int16_t *s16;
-		uint16_t *u16;
-		int32_t *s32;
-		uint32_t *u32;
+		int32_t *num;
 		float *flt;
 		double *dou;
 		char *str;
