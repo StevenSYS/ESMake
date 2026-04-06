@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "lang.h"
 #include "varFlag.h"
-#include "errorString.h"
 
 const char *varFlag_names[VARFLAG_COUNT] = {
 	"nn", // No Name
@@ -19,7 +19,7 @@ enum varFlags varFlag_check(
 	size_t nameLen = 0;
 	
 	if (str == NULL) {
-		fprintf(stderr, STR_ERROR_REQUIRED_ARGS);
+		fprintf(stderr, LANG_ERROR_REQUIRED_ARGS);
 		return 1;
 	}
 	

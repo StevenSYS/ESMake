@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+#include <clonc_clon.h>
 
 #include "file.h"
-#include "variable.h"
 #include "progInfo.h"
 
 int main(
@@ -10,8 +10,10 @@ int main(
 	char *argv[]
 ) {
 	int result = 0;
+	char *fileStr;
+	size_t fileLen;
 	FILE *file;
-	variable_t var;
+	clonc_var_t var;
 	
 	if (argc < 2) {
 		fprintf(stderr, "ERROR: File wasn't specified\n");
@@ -26,31 +28,47 @@ int main(
 		return 1;
 	}
 	
-	getVar:
-	result = variable_getFile(file, &var);
+	fseek(file, 0, SEEK_END);
+	fileLen = ftell(file);
+	fseek(file, 0, SEEK_SET);
+	
+	fileStr = malloc(fileLen);
+	
+	if (!fread(fileStr, sizeof(char), fileLen, file)) {
+		fprintf(stderr, "ERROR: Failed to read file\n");
+		return 1;
+	}
+	
+	// getVar:
+	result = clonc_getStr(
+		fileStr,
+		fileLen,
+		&var
+	);
 	
 	if (result > 0) {
 		return 1;
 	}
 	
 	if (result == 0) {
-		printf(
+		/*printf(
 			"Type: \"%s\"\n"
 			"Name: \"%s\"\n",
-			variable_typeNames[var.type],
+			clonc_var_typeNames[var.type],
 			var.name
-		);
+		);*/
 		
-		if (var.type == VARTYPE_STR) {
+		/*if (var.type == VARTYPE_STR) {
 			printf("Value: %s\n", var.value.str);
 		} else {
-			printf("Value: %d\n", *var.value.num);
-		}
+			printf("Value: %zd\n", *var.value.sl);
+		}*/
 		
-		variable_uninit(&var);
-		goto getVar;
+		clonc_uninit(&var);
+		// goto getVar;
 	}
 	
+	free(fileStr);
 	fclose(file);
 	return 0;
 }

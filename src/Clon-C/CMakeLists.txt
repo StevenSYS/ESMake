@@ -1,16 +1,23 @@
 cmake_minimum_required(VERSION 3.11)
 
-project(ESMake LANGUAGES C VERSION 1.0)
+project(Clon-C LANGUAGES C VERSION 1.0)
 
-option(BUILD_SHARED_LIBS "Build the libraries as shared libraries" ON)
+set(
+	CLONC_INCLUDE_DIRS
+	"${CMAKE_CURRENT_SOURCE_DIR}/src"
+	PARENT_SCOPE
+)
+
 option(BUILD_FOR_I586 "Build ${PROJECT_NAME} for i586 (Intel Pentium) or higher" OFF)
 # Windows Compiler Options
 option(BUILD_USING_MSVCRT20 "Build ${PROJECT_NAME} using msvcrt20 (Windows Compiler Only)" OFF)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DVOARRAY_DEFCONFIG")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
 set(CMAKE_C_FLAGS_DEBUG "-g -Wall")
 set(CMAKE_C_FLAGS_RELEASE "-O2")
-if(NOT CMAKE_C_COMPILER_ID MATCHES "Clang")
+if (NOT CMAKE_C_COMPILER_ID MATCHES "Clang")
 	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -s")
 endif()
 
@@ -22,30 +29,24 @@ if(WIN32)
 	if(BUILD_USING_MSVCRT20)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mcrtdll=msvcrt20")
 	endif()
-elseif(NOT WIN32 AND BUILD_USING_MSVCRT20)
+elseif(WIN32 AND BUILD_USING_MSVCRT20)
 	message(FATAL_ERROR "To build using msvcrt20 you must be using a Windows C compiler")
 endif()
 
-add_subdirectory("src/Clon-C")
+file(GLOB CLONC_SOURCE_FILES "src/*.c")
+file(GLOB CLONC_HEADER_FILES "src/*.h")
 
-file(GLOB SOURCE_FILES "src/*.c")
+include_directories("src/internal")
 
-include_directories(
-	${CLONC_INCLUDE_DIRS}
-)
-
-configure_file(
-	${CMAKE_CURRENT_SOURCE_DIR}/src/progInfo.h.in
-	${CMAKE_CURRENT_SOURCE_DIR}/src/progInfo.h
-	@ONLY
-)
-
-add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-set_property(TARGET ${PROJECT_NAME} PROPERTY BUILD_RPATH ".")
-target_link_libraries(
-	${PROJECT_NAME}
-	Clon-C
-)
+add_library(${PROJECT_NAME} ${CLONC_SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PRIVATE "src")
+set_target_properties(
+	${PROJECT_NAME} PROPERTIES
+	PUBLIC_HEADER "${CLONC_HEADER_FILES}"
+)
 
-install(TARGETS ${PROJECT_NAME} DESTINATION bin)
+install(
+	TARGETS ${PROJECT_NAME}
+	LIBRARY DESTINATION "lib"
+	PUBLIC_HEADER DESTINATION "include"
+)

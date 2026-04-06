@@ -1,5 +1,5 @@
-#ifndef __VARFLAG__
-#define __VARFLAG__
+#ifndef __CLONC_VARFLAG__
+#define __CLONC_VARFLAG__
 
 /* MACROS */
 #define VARFLAG_BM(_val) (1 << _val)
