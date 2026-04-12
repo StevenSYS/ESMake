@@ -27,11 +27,10 @@ enum varFlags varFlag_check(
 		len = strnlen(str, maxLen);
 		nameLen = strlen(varFlag_names[i]);
 		
-		if (len != nameLen) {
-			break;
-		}
-		
-		if (strncmp(str, varFlag_names[i], len) == 0) {
+		if (
+			len == nameLen &&
+			strncmp(str, varFlag_names[i], len) == 0
+		) {
 			return (enum varFlags)i;
 		}
 	}

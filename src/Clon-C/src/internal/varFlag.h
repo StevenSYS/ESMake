@@ -1,8 +1,5 @@
-#ifndef __CLONC_VARFLAG__
-#define __CLONC_VARFLAG__
-
-/* MACROS */
-#define VARFLAG_BM(_val) (1 << _val)
+#ifndef __VARFLAG__
+#define __VARFLAG__
 
 /* Enums */
 enum varFlags {

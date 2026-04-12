@@ -1,6 +1,6 @@
 #include <stdio.h>
+#include <clonc.h>
 #include <string.h>
-#include <clonc_clon.h>
 
 #include "file.h"
 #include "progInfo.h"
@@ -9,11 +9,10 @@ int main(
 	int argc,
 	char *argv[]
 ) {
-	int result = 0;
 	char *fileStr;
 	size_t fileLen;
 	FILE *file;
-	clonc_var_t var;
+	clonc_obj_t obj;
 	
 	if (argc < 2) {
 		fprintf(stderr, "ERROR: File wasn't specified\n");
@@ -39,35 +38,19 @@ int main(
 		return 1;
 	}
 	
-	// getVar:
-	result = clonc_getStr(
+	if (clonc_objFromStr(
 		fileStr,
 		fileLen,
-		&var
-	);
-	
-	if (result > 0) {
+		&obj
+	)) {
 		return 1;
 	}
 	
-	if (result == 0) {
-		/*printf(
-			"Type: \"%s\"\n"
-			"Name: \"%s\"\n",
-			clonc_var_typeNames[var.type],
-			var.name
-		);*/
-		
-		/*if (var.type == VARTYPE_STR) {
-			printf("Value: %s\n", var.value.str);
-		} else {
-			printf("Value: %zd\n", *var.value.sl);
-		}*/
-		
-		clonc_uninit(&var);
-		// goto getVar;
-	}
+	/*if (clonc_objUninit(&obj)) {
+		return 1;
+	}*/
 	
+	VOARRAY_UNINIT(obj);
 	free(fileStr);
 	fclose(file);
 	return 0;
