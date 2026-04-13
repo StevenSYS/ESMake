@@ -1,0 +1,1 @@
+au BufRead,BufNewFile *.esm set filetype=esmake

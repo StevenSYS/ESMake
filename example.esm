@@ -1,0 +1,31 @@
+! | Legend | Meaning                     |
+! | ------ | --------------------------- |
+! | +      | Section                     |
+! | %      | Variable                    |
+! | @      | Name only variable          |
+! | !      | Comment                     |
+
++outputs
+%ret "test.h"
+%enum "enum.h"
+%lang1 "lang1.h"
+%lang2 "lang2.h"
+
++variables
+%preEnum "ERROR_"
+%preLang "LANG_ERROR_"
+
++items
+@EXAMPLE
+%lang1 "lang1 - Example"
+%lang2 "lang2 - Example"
+
+@EXAMPLE2
+%lang1 "lang1 - Example 2"
+%lang2 "lang2 - Example 2"
+
+! This is the default item in the return switch
+@DEFEXAMPLE
+@default
+%lang1 "lang1 - Default Example"
+%lang2 "lang2 - Default Example"

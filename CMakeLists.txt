@@ -26,13 +26,7 @@ elseif(NOT WIN32 AND BUILD_USING_MSVCRT20)
 	message(FATAL_ERROR "To build using msvcrt20 you must be using a Windows C compiler")
 endif()
 
-add_subdirectory("src/Clon-C")
-
 file(GLOB SOURCE_FILES "src/*.c")
-
-include_directories(
-	${CLONC_INCLUDE_DIRS}
-)
 
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/src/progInfo.h.in
@@ -42,10 +36,6 @@ configure_file(
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY BUILD_RPATH ".")
-target_link_libraries(
-	${PROJECT_NAME}
-	Clon-C
-)
 target_include_directories(${PROJECT_NAME} PRIVATE "src")
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)

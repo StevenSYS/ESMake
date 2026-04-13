@@ -1,1 +1,0 @@
-au BufRead,BufNewFile *.clon set filetype=clon

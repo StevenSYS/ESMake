@@ -1,18 +1,27 @@
 #include <stdio.h>
-#include <clonc.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "file.h"
+#include "parser.h"
 #include "progInfo.h"
+
+static const char *sectNames[3] = {
+	"outputs",
+	"variables",
+	"items"
+};
 
 int main(
 	int argc,
 	char *argv[]
 ) {
-	char *fileStr;
-	size_t fileLen;
+	char *str = NULL;
+	unsigned char j = 0;
+	size_t i;
+	size_t len;
 	FILE *file;
-	clonc_obj_t obj;
+	section_t *sect;
 	
 	if (argc < 2) {
 		fprintf(stderr, "ERROR: File wasn't specified\n");
@@ -28,30 +37,41 @@ int main(
 	}
 	
 	fseek(file, 0, SEEK_END);
-	fileLen = ftell(file);
+	len = ftell(file);
 	fseek(file, 0, SEEK_SET);
 	
-	fileStr = malloc(fileLen);
+	str = (char *)malloc(sizeof(char[len]));
+	fread(str, sizeof(char), len, file);
 	
-	if (!fread(fileStr, sizeof(char), fileLen, file)) {
-		fprintf(stderr, "ERROR: Failed to read file\n");
-		return 1;
+	for (j = 0; j < 3; j++) {
+		sect = parser_getSection(
+			str,
+			len,
+			sectNames[j]
+		);
+		
+		if (sect == NULL) {
+			return 1;
+		}
+		
+		printf("- %s -\n", sect->name);
+		for (i = 0; i < sect->vars.length; i++) {
+			printf("%s", sect->vars.i[i].name);
+			if (sect->vars.i[i].value != NULL) {
+				printf(" = \"%s\"", sect->vars.i[i].value);
+			}
+			printf("\n");
+		}
+		
+		for (i = 0; i < strlen(sect->name) + 4; i++) {
+			printf("-");
+		}
+		printf("\n");
+		
+		parser_uninitSection(sect);
 	}
 	
-	if (clonc_objFromStr(
-		fileStr,
-		fileLen,
-		&obj
-	)) {
-		return 1;
-	}
-	
-	/*if (clonc_objUninit(&obj)) {
-		return 1;
-	}*/
-	
-	VOARRAY_UNINIT(obj);
-	free(fileStr);
+	free(str);
 	fclose(file);
 	return 0;
 }
