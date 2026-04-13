@@ -24,10 +24,12 @@ section_t *parser_getSection(
 	const char *name
 );
 
-var_t *parser_getVar(
+size_t parser_getVar(
 	const section_t *sect,
 	const char *name,
-	size_t len
+	size_t len,
+	size_t offset,
+	char *check
 );
 
 void parser_uninitVar(var_t *var);

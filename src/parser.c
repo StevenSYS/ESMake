@@ -44,7 +44,7 @@ section_t *parser_getSection(
 ) {
 	char check = 0;
 	char counted = 0;
-	char foundSect;
+	char foundSect = 0;
 	char noVal = 0;
 	char *strCopy;
 	char *prev = NULL;
@@ -105,7 +105,7 @@ section_t *parser_getSection(
 						);
 						strncpy(ret->name, name, tmpLen);
 						ret->name[tmpLen] = 0;
-						ret->vars.length = 0;
+						ret->vars.size = 0;
 					}
 					foundSect = 1;
 				}
@@ -187,7 +187,7 @@ section_t *parser_getSection(
 						}
 						varPos++;
 					} else {
-						ret->vars.length++;
+						ret->vars.size++;
 					}
 				}
 				continue;
@@ -199,7 +199,7 @@ section_t *parser_getSection(
 	if (
 		!counted &&
 		ret != NULL &&
-		ret->vars.length
+		ret->vars.size
 	) {
 		VOARRAY_INIT(var_t, ret->vars, NULL);
 		counted = 1;
@@ -214,15 +214,23 @@ section_t *parser_getSection(
 	return ret;
 }
 
-var_t *parser_getVar(
+size_t parser_getVar(
 	const section_t *sect,
 	const char *name,
-	size_t len
+	size_t len,
+	size_t offset,
+	char *check
 ) {
 	size_t i;
 	size_t varLen;
 	
-	for (i = 0; i < sect->vars.length; i++) {
+	*check = 1;
+	
+	for (i = offset; i < sect->vars.size; i++) {
+		if (sect->vars.i[i].name == NULL) {
+			continue;
+		}
+		
 		varLen = strlen(sect->vars.i[i].name);
 		
 		if (
@@ -233,10 +241,11 @@ var_t *parser_getVar(
 				len
 			) == 0
 		) {
-			return &sect->vars.i[i];
+			*check = 0;
+			return i;
 		}
 	}
-	return NULL;
+	return 0;
 }
 
 void parser_uninitVar(var_t *var) {
@@ -255,7 +264,7 @@ void parser_uninitVar(var_t *var) {
 void parser_uninitSection(section_t *sect) {
 	size_t i;
 	
-	for (i = 0; i < sect->vars.length; i++) {
+	for (i = 0; i < sect->vars.size; i++) {
 		parser_uninitVar(&sect->vars.i[i]);
 	}
 	VOARRAY_UNINIT(sect->vars);
