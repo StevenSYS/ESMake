@@ -30,9 +30,10 @@ int main(
 	char *str = NULL;
 	char *name = NULL;
 	char *value = NULL;
-	unsigned char j = 0;
+	unsigned char j;
 	size_t i, k;
 	size_t len;
+	size_t size;
 	FILE *file = NULL;
 	FILE **outFiles = NULL;
 	
@@ -68,26 +69,29 @@ int main(
 			return 1;
 		}
 		
+		size = sects[j]->vars.size;
+		
 		switch (j) {
 			case SECTION_OUTPUTS:
 				if (outFiles == NULL) {
 					outFiles = (FILE **)malloc(
-						sizeof(
-							FILE *[sects[j]->vars.size]
-						)
+						sizeof(FILE *[size])
 					);
 					
-					for (i = 0; i < sects[j]->vars.size; i++) {
+					for (i = 0; i < size; i++) {
+						name = sects[j]->vars.i[i].name;
+						value = sects[j]->vars.i[i].value;
+						
 						parser_getVar(
 							sects[j],
-							sects[j]->vars.i[i].name,
-							strlen(sects[j]->vars.i[i].name),
+							name,
+							strlen(name),
 							i + 1,
 							&check
 						);
 						
 						if (!check) {
-							fprintf(stderr, "ERROR: Output variable already exists\n");
+							fprintf(stderr, "ERROR: Output variable already exists: %s\n", name);
 							return 1;
 						}
 						
@@ -95,7 +99,7 @@ int main(
 						
 						if (file_open(
 							&outFiles[i],
-							sects[j]->vars.i[i].value,
+							value,
 							"w"
 						)) {
 							return 1;
@@ -104,7 +108,7 @@ int main(
 				}
 				break;
 			case SECTION_ITEMS:
-				for (i = 0; i < sects[j]->vars.size; i++) {
+				for (i = 0; i < size; i++) {
 					name = sects[j]->vars.i[i].name;
 					value = sects[j]->vars.i[i].value;
 					
