@@ -3,12 +3,17 @@
 #include <string.h>
 
 #include "parser.h"
+#include "macros.h"
+#include "progInfo.h"
 
-#define MALLOC_EC(_out, _len, _type, _ret) \
-	_out = (_type)malloc(_len); \
-	if (_out == NULL) { \
-		fprintf(stderr, "ERROR: Failed to allocate memory\n"); \
-		return _ret; \
+#define FINDQUOTE() \
+	for (; prev[i]; i++) { \
+		if (prev[i] == '\n') { \
+			break; \
+		} else if (prev[i] == '"') { \
+			check = 1; \
+			break; \
+		} \
 	}
 
 static inline char *sgets(
@@ -45,7 +50,6 @@ section_t *parser_getSection(
 	char check = 0;
 	char counted = 0;
 	char foundSect = 0;
-	char noVal = 0;
 	char *strCopy;
 	char *prev = NULL;
 	char *current;
@@ -53,6 +57,10 @@ section_t *parser_getSection(
 	size_t varPos = 0;
 	size_t i;
 	section_t *ret = NULL;
+	
+	#define SIZE ret->vars.size
+	#define NAME ret->vars.i[varPos].name
+	#define VALUE ret->vars.i[varPos].value
 	
 	if (
 		str == NULL ||
@@ -76,43 +84,33 @@ section_t *parser_getSection(
 	current = strCopy;
 	
 	while (current != NULL) {
-		noVal = 0;
 		prev = current;
 		sgets(&current, len, strCopy);
 		
 		for (; prev[0] && isspace(prev[0]); prev++);
 		
 		switch (prev[0]) {
-			case '+':
+			case LEGEND_SECTION:
 				if (foundSect) {
 					goto end;
 				}
 				
 				if (strncmp(prev + 1, name, len) == 0) {
 					if (ret == NULL) {
-						tmpLen = strlen(name);
 						MALLOC_EC(
 							ret,
 							sizeof(section_t),
 							section_t *,
 							NULL
 						);
-						MALLOC_EC(
-							ret->name,
-							sizeof(char[tmpLen]),
-							char *,
-							NULL
-						);
-						strncpy(ret->name, name, tmpLen);
-						ret->name[tmpLen] = 0;
-						ret->vars.size = 0;
+						STRCLONE(ret->name, name);
+						SIZE = 0;
 					}
 					foundSect = 1;
 				}
 				continue;
-			case '@':
-				noVal = 1;
-			case '%':
+			case LEGEND_VAR_NOVAL:
+			case LEGEND_VAR:
 				if (foundSect) {
 					if (counted) {
 						for (i = 0; prev[i]; i++) {
@@ -124,70 +122,42 @@ section_t *parser_getSection(
 						
 						check = 0;
 						
-						if (!noVal) {
-							for (i++; prev[i]; i++) {
-								if (prev[i] == '\n') {
-									break;
-								} else if (prev[i] == '"') {
-									check = 1;
-									i++;
-									break;
-								}
-							}
+						if (prev[0] != LEGEND_VAR_NOVAL) {
+							i++;
+							FINDQUOTE();
+							i++;
 							
 							if (!check) {
-								fprintf(stderr, "ERROR: Missing start of value\n");
+								fprintf(stderr, "ERROR: Missing start of value: %s\n", name);
 								return NULL;
 							}
 						}
 						
-						tmpLen = strlen(prev + 1),
-						MALLOC_EC(
-							ret->vars.i[varPos].name,
-							sizeof(char[tmpLen]),
-							char *,
-							NULL
-						);
-						strncpy(ret->vars.i[varPos].name, prev + 1, tmpLen);
-						ret->vars.i[varPos].name[tmpLen] = 0;
+						STRCLONE(NAME, prev + 1);
 						
-						if (noVal) {
-							ret->vars.i[varPos].value = NULL;
+						if (prev[0] == LEGEND_VAR_NOVAL) {
+							VALUE = NULL;
 						} else {
 							prev = prev + i;
 							
 							check = 0;
 							
-							for (i = 0; prev[i]; i++) {
-								if (prev[i] == '\n') {
-									break;
-								} else if (prev[i] == '"') {
-									check = 1;
-									prev[i] = 0;
-									break;
-								}
-							}
+							i = 0;
+							FINDQUOTE();
+							prev[i] = 0;
 							
 							if (!check) {
-								fprintf(stderr, "ERROR: Missing end of value\n");
+								fprintf(stderr, "ERROR: Missing end of value: %s\n", NAME);
 								return NULL;
 							}
 							
 							if (prev[0]) {
-								tmpLen = strlen(prev),
-								MALLOC_EC(
-									ret->vars.i[varPos].value,
-									sizeof(char[tmpLen]),
-									char *,
-									NULL
-								);
-								strncpy(ret->vars.i[varPos].value, prev, tmpLen);
-								ret->vars.i[varPos].value[tmpLen] = 0;
+								STRCLONE(VALUE, prev);
 							}
 						}
 						varPos++;
 					} else {
-						ret->vars.size++;
+						SIZE++;
 					}
 				}
 				continue;
@@ -199,7 +169,7 @@ section_t *parser_getSection(
 	if (
 		!counted &&
 		ret != NULL &&
-		ret->vars.size
+		SIZE
 	) {
 		VOARRAY_INIT(var_t, ret->vars, NULL);
 		counted = 1;
@@ -209,8 +179,12 @@ section_t *parser_getSection(
 	free(strCopy);
 	
 	if (ret == NULL) {
-		fprintf(stderr, "ERROR: Failed to find section\n");
+		fprintf(stderr, "ERROR: Failed to find section: %s\n", name);
 	}
+	
+	#undef SIZE
+	#undef NAME
+	#undef VALUE
 	return ret;
 }
 

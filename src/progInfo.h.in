@@ -16,11 +16,19 @@
 /* - Length - */
 #define LENGTH_BUFFER 255
 
+/* - Legend - */
+#define LEGEND_SECTION '+'
+#define LEGEND_VAR '%'
+#define LEGEND_VAR_NOVAL '@'
+
+/* - Variable - */
+#define VARIABLE_DEFAULT "default"
+
 /* - Misc. - */
 #define AUTOGEN_TEXT \
 	"/*\n" \
 	"	Generated with " PROGRAM_NAME " v" PROGRAM_VERSION ",\n" \
 	"	do not modify this file directly.\n" \
-	"*/\n"
+	"*/\n\n"
 
 #endif

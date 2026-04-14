@@ -1,41 +1,16 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "file.h"
-#include "parser.h"
-#include "progInfo.h"
-
-enum sections {
-	SECTION_OUTPUTS,
-	SECTION_VARIABLES,
-	SECTION_ITEMS,
-	
-	SECTION_COUNT
-};
-
-static const char *sectNames[SECTION_COUNT] = {
-	"outputs",
-	"variables",
-	"items"
-};
-
-static section_t *sects[SECTION_COUNT];
+#include "macros.h"
+#include "esmake.h"
 
 int main(
 	int argc,
 	char *argv[]
 ) {
-	char check = 0;
 	char *str = NULL;
-	char *name = NULL;
-	char *value = NULL;
-	unsigned char j;
-	size_t i, k;
 	size_t len;
-	size_t size;
 	FILE *file = NULL;
-	FILE **outFiles = NULL;
 	
 	if (argc < 2) {
 		fprintf(stderr, "ERROR: File wasn't specified\n");
@@ -54,97 +29,17 @@ int main(
 	len = ftell(file);
 	fseek(file, 0, SEEK_SET);
 	
-	str = (char *)malloc(sizeof(char[len]));
+	MALLOC_EC(
+		str,
+		sizeof(char[len]),
+		char *,
+		1
+	);
 	fread(str, sizeof(char), len, file);
 	fclose(file);
 	
-	for (j = 0; j < SECTION_COUNT; j++) {
-		sects[j] = parser_getSection(
-			str,
-			len,
-			sectNames[j]
-		);
-		
-		if (sects[j] == NULL) {
-			return 1;
-		}
-		
-		size = sects[j]->vars.size;
-		
-		switch (j) {
-			case SECTION_OUTPUTS:
-				if (outFiles == NULL) {
-					outFiles = (FILE **)malloc(
-						sizeof(FILE *[size])
-					);
-					
-					for (i = 0; i < size; i++) {
-						name = sects[j]->vars.i[i].name;
-						value = sects[j]->vars.i[i].value;
-						
-						parser_getVar(
-							sects[j],
-							name,
-							strlen(name),
-							i + 1,
-							&check
-						);
-						
-						if (!check) {
-							fprintf(stderr, "ERROR: Output variable already exists: %s\n", name);
-							return 1;
-						}
-						
-						outFiles[i] = NULL;
-						
-						if (file_open(
-							&outFiles[i],
-							value,
-							"w"
-						)) {
-							return 1;
-						}
-					}
-				}
-				break;
-			case SECTION_ITEMS:
-				for (i = 0; i < size; i++) {
-					name = sects[j]->vars.i[i].name;
-					value = sects[j]->vars.i[i].value;
-					
-					if (value != NULL) {
-						k = parser_getVar(
-							sects[SECTION_OUTPUTS],
-							name,
-							strlen(name),
-							0,
-							&check
-						);
-						
-						if (check) {
-							fprintf(stderr, "ERROR: Failed to get file: %s\n", name);
-							break;
-						} else {
-							printf("%s %s\n", name, value);
-						}
-					}
-				}
-				break;
-			default:
-				break;
-		}
-		
-	}
+	esmake_process(str, len);
 	
-	for (i = 0; i < sects[SECTION_OUTPUTS]->vars.size; i++) {
-		fclose(outFiles[i]);
-	}
-	
-	for (j = 0; j < SECTION_COUNT; j++) {
-		parser_uninitSection(sects[j]);
-	}
-	
-	free(outFiles);
 	free(str);
 	return 0;
 }

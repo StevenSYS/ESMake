@@ -2,11 +2,11 @@
 ! | ------ | --------------------------- |
 ! | +      | Section                     |
 ! | %      | Variable                    |
-! | @      | Name only variable          |
+! | @      | No value variable           |
 ! | !      | Comment                     |
 
 +outputs
-	%ret "test.h"
+	%ret "ret.h"
 	%enum "enum.h"
 	%lang1 "lang1.h"
 	%lang2 "lang2.h"
@@ -20,8 +20,8 @@
 	@EXAMPLE2
 		%lang1 "lang1 - Example 2"
 		%lang2 "lang2 - Example 2"
+	! This is the default item in the return switch
+	@default
 	@DEFEXAMPLE
-		! This is the default item in the return switch
-		@default
 		%lang1 "lang1 - Default Example"
 		%lang2 "lang2 - Default Example"
