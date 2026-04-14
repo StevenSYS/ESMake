@@ -2,36 +2,33 @@
 #define __PROGINFO__
 
 /* - Program - */
+#ifndef PROGRAM_PRE_RELEASE
+	#define PROGRAM_PRE_RELEASE 1
+#endif
+
 #define PROGRAM_NAME "@PROJECT_NAME@"
+#if PROGRAM_PRE_RELEASE
+	#define PROGRAM_VERSION "@PROJECT_VERSION@pre"
+#else
+	#define PROGRAM_VERSION "@PROJECT_VERSION@"
+#endif
 
 /* - Length - */
 #define LENGTH_BUFFER 255
 
 /* - Legend - */
-#define LEGEND_OUTPUT '>'
-#define LEGEND_SETTING '%'
-#define LEGEND_ITEM '+'
-#define LEGEND_ITEMDEFAULT '-'
-#define LEGEND_COMMENT '!'
-#define LEGEND_ESCAPE '\\'
+#define LEGEND_SECTION '+'
+#define LEGEND_VAR '%'
+#define LEGEND_VAR_NOVAL '@'
 
-/* - Type - */
-#define TYPE_ENUM "enum"
-#define TYPE_LANG "lang"
-
-/* - Max - */
-#define MAX_OUTPUTS 2
-
-/* - Setting - */
-#define SETTING_MODE "mode"
-#define SETTING_PREENUM "preEnum"
-#define SETTING_PRELANG "preLang"
+/* - Variable - */
+#define VARIABLE_DEFAULT "default"
 
 /* - Misc. - */
 #define AUTOGEN_TEXT \
 	"/*\n" \
-	"	Generated with " PROGRAM_NAME ",\n" \
+	"	Generated with " PROGRAM_NAME " v" PROGRAM_VERSION ",\n" \
 	"	do not modify this file directly.\n" \
-	"*/\n"
+	"*/\n\n"
 
 #endif

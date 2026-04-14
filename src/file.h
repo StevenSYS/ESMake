@@ -1,6 +1,8 @@
 #ifndef __FILE_H__
 #define __FILE_H__
 
+#include <stdio.h>
+
 /* Functions */
 int file_open(
 	FILE **output,

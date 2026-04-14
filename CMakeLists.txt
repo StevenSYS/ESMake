@@ -2,10 +2,12 @@ cmake_minimum_required(VERSION 3.11)
 
 project(ESMake LANGUAGES C VERSION 1.0)
 
-option(BUILD_FOR_I586 "Build ${PROGRAM_NAME} for i586 (Intel Pentium) or higher" OFF)
+option(BUILD_SHARED_LIBS "Build the libraries as shared libraries" ON)
+option(BUILD_FOR_I586 "Build ${PROJECT_NAME} for i586 (Intel Pentium) or higher" OFF)
 # Windows Compiler Options
-option(BUILD_USING_MSVCRT20 "Build ${PROGRAM_NAME} using msvcrt20 (Windows Compiler Only)" OFF)
+option(BUILD_USING_MSVCRT20 "Build ${PROJECT_NAME} using msvcrt20 (Windows Compiler Only)" OFF)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DVOARRAY_DEFCONFIG")
 set(CMAKE_C_FLAGS_DEBUG "-g -Wall")
 set(CMAKE_C_FLAGS_RELEASE "-O2")
 if(NOT CMAKE_C_COMPILER_ID MATCHES "Clang")

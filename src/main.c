@@ -1,15 +1,16 @@
-#include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 
 #include "file.h"
-#include "progInfo.h"
-#include "errorMake.h"
+#include "macros.h"
+#include "esmake.h"
 
 int main(
 	int argc,
 	char *argv[]
 ) {
-	FILE *fileInput;
+	char *str = NULL;
+	size_t len;
+	FILE *file = NULL;
 	
 	if (argc < 2) {
 		fprintf(stderr, "ERROR: File wasn't specified\n");
@@ -17,17 +18,28 @@ int main(
 	}
 	
 	if (file_open(
-		&fileInput,
+		&file,
 		argv[1],
 		"r"
 	)) {
 		return 1;
 	}
 	
-	if (errorMake_readFile(fileInput)) {
-		return 1;
-	}
+	fseek(file, 0, SEEK_END);
+	len = ftell(file);
+	fseek(file, 0, SEEK_SET);
 	
-	fclose(fileInput);
+	MALLOC_EC(
+		str,
+		sizeof(char[len]),
+		char *,
+		1
+	);
+	fread(str, sizeof(char), len, file);
+	fclose(file);
+	
+	esmake_process(str, len);
+	
+	free(str);
 	return 0;
 }
