@@ -2,8 +2,11 @@
 ! | ------ | --------------------------- |
 ! | +      | Section                     |
 ! | %      | Variable                    |
-! | @      | No value variable           |
-! | !      | Comment                     |
+! | @      | Name only variable          |
+! | ! or # | Comment                     |
+
+! A comment.
+# Also a comment.
 
 +outputs
 	%ret "ret.h"
