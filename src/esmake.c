@@ -273,7 +273,7 @@ int esmake_process(
 		parser_uninitSection(sects[i]);
 	}
 	
-	free(outFiles);
+	SAFE_FREE(outFiles);
 	
 	#undef SECT
 	#undef SIZE
