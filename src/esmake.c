@@ -11,8 +11,8 @@
 	_nameArr, \
 	_posArr \
 ) \
-	if (count < REQOUTS_COUNT) { \
-		for (k = 0; k < REQOUTS_COUNT; k++) { \
+	if (count < _count) { \
+		for (k = 0; k < _count; k++) { \
 			tmpLen = strlen(_nameArr[k]); \
 			if ( \
 				strlen(NAME) == tmpLen && \
@@ -171,7 +171,7 @@ int esmake_process(
 					REQCHECK(REQVARS_COUNT, reqVarNames, reqVarPos);
 				}
 				
-				if (count < REQOUTS_COUNT) {
+				if (count < REQVARS_COUNT) {
 					fprintf(
 						stderr,
 						"ERROR: Missing %zu required variable(s)\n",
