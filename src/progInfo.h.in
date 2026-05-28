@@ -20,6 +20,8 @@
 #define LEGEND_SECTION '+'
 #define LEGEND_VAR '%'
 #define LEGEND_VAR_NOVAL '@'
+#define LEGEND_COMMENT1 '!'
+#define LEGEND_COMMENT2 '#'
 
 /* - Variable - */
 #define VARIABLE_DEFAULT "default"
