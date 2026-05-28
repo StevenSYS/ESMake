@@ -7,4 +7,4 @@ Program that helps with making errors strings and enums the way I do it
 | +      | Section                     |
 | %      | Variable                    |
 | @      | Name only variable          |
-| !      | Comment                     |
+| ! or # | Comment                     |
