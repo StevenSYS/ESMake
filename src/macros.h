@@ -17,4 +17,10 @@
 		); \
 		strncpy(_out, _str, tmpLen); \
 		_out[tmpLen] = 0;
+	
+	#define SAFE_FREE(_var) \
+		if (_var != NULL) { \
+			free(_var); \
+			_var = NULL; \
+		}
 #endif

@@ -11,16 +11,10 @@
 		if (prev[i] == '\n') { \
 			break; \
 		} else if (prev[i] == '"') { \
-			check = 1; \
+			failed = 1; \
 			break; \
 		} \
 	}
-
-#define SAFE_FREE(_var) \
- if (_var != NULL) { \
-		free(_var); \
-		_var = NULL; \
- }
 
 static inline char *sgets(
 	char **out,
@@ -53,7 +47,7 @@ section_t *parser_getSection(
 	size_t len,
 	const char *name
 ) {
-	char check = 0;
+	char failed = 1;
 	char counted = 0;
 	char foundSect = 0;
 	char *strCopy;
@@ -126,14 +120,14 @@ section_t *parser_getSection(
 							}
 						}
 						
-						check = 0;
+						failed = 1;
 						
 						if (prev[0] != LEGEND_VAR_NOVAL) {
 							i++;
 							FINDQUOTE();
 							i++;
 							
-							if (!check) {
+							if (!failed) {
 								fprintf(stderr, "ERROR: Missing start of value: %s\n", name);
 								return NULL;
 							}
@@ -146,13 +140,13 @@ section_t *parser_getSection(
 						} else {
 							prev = prev + i;
 							
-							check = 0;
+							failed = 1;
 							
 							i = 0;
 							FINDQUOTE();
 							prev[i] = 0;
 							
-							if (!check) {
+							if (!failed) {
 								fprintf(stderr, "ERROR: Missing end of value: %s\n", NAME);
 								return NULL;
 							}
@@ -171,8 +165,15 @@ section_t *parser_getSection(
 			case LEGEND_COMMENT2:
 				continue;
 			default:
-    parser_uninitSection(ret);
-    fprintf(stderr, "ERROR: Unknown character: %c", prev[0]);
+				if (
+					!prev[0] ||
+					isspace(prev[0])
+				) {
+					continue;
+				}
+				
+				parser_uninitSection(ret);
+				fprintf(stderr, "ERROR: Unknown character: %c\n", prev[0]);
 				return NULL;
 		}
 	}
@@ -187,15 +188,15 @@ section_t *parser_getSection(
 		goto setStr;
 	}
 	
-	free(strCopy);
+	SAFE_FREE(strCopy);
 	
 	if (ret == NULL) {
 		fprintf(stderr, "ERROR: Failed to find section: %s\n", name);
 	}
  
- #undef SIZE
- #undef NAME
- #undef VALUE
+	#undef SIZE
+	#undef NAME
+	#undef VALUE
 	return ret;
 }
 
@@ -204,12 +205,12 @@ size_t parser_getVar(
 	const char *name,
 	size_t len,
 	size_t offset,
-	char *check
+	char *failed
 ) {
 	size_t i;
 	size_t varLen;
 	
-	*check = 1;
+	*failed = 1;
 	
 	for (i = offset; i < sect->vars.size; i++) {
 		if (sect->vars.i[i].name == NULL) {
@@ -226,7 +227,7 @@ size_t parser_getVar(
 				len
 			) == 0
 		) {
-			*check = 0;
+			*failed = 0;
 			return i;
 		}
 	}
@@ -234,22 +235,21 @@ size_t parser_getVar(
 }
 
 void parser_uninitVar(var_t *var) {
- if (var == NULL) {
-  return;
- }
- 
- SAFE_FREE(var->name);
- SAFE_FREE(var->value);
+	if (var == NULL) {
+		return;
+	}
+	SAFE_FREE(var->name);
+	SAFE_FREE(var->value);
 	return;
 }
 
 void parser_uninitSection(section_t *sect) {
 	size_t i;
 	
- if (sect == NULL) {
-  return;
- }
-
+	if (sect == NULL) {
+		return;
+	}
+	
 	for (i = 0; i < sect->vars.size; i++) {
 		parser_uninitVar(&sect->vars.i[i]);
 	}

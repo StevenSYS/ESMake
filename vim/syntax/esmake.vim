@@ -9,7 +9,7 @@ endif
 
 " Region
 syn region esmValue start="\"" end="[\"\n]"
-syn region esmComment start="^\s*!" end="$"
+syn region esmComment start="^\s*!\|#" end="$"
 
 " Match
 syn match esmVar "^\s*[%@]\S\+"

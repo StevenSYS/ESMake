@@ -63,7 +63,7 @@ int esmake_process(
 	const char *str,
 	size_t len
 ) {
-	char check = 0;
+	char failed = 1;
 	char def = 0;
 	char *itemName = NULL;
 	unsigned char j, l;
@@ -95,7 +95,7 @@ int esmake_process(
 		switch (j) {
 			case SECTION_OUTPUTS:
 				if (outFiles == NULL) {
-					check = 0;
+					failed = 1;
 					
 					MALLOC_EC(
 						outFiles,
@@ -121,10 +121,10 @@ int esmake_process(
 							NAME,
 							strlen(NAME),
 							i + 1,
-							&check
+							&failed
 						);
 						
-						if (!check) {
+						if (!failed) {
 							fprintf(
 								stderr,
 								"ERROR: Output variable already exists: %s\n",
@@ -240,10 +240,10 @@ int esmake_process(
 								NAME,
 								strlen(NAME),
 								0,
-								&check
+								&failed
 							);
 							
-							if (check) {
+							if (failed) {
 								fprintf(stderr, "ERROR: Failed to get file: %s\n", NAME);
 								break;
 							} else {

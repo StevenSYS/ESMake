@@ -29,7 +29,7 @@ size_t parser_getVar(
 	const char *name,
 	size_t len,
 	size_t offset,
-	char *check
+	char *failed
 );
 
 void parser_uninitVar(var_t *var);
