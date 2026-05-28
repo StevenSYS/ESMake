@@ -16,6 +16,12 @@
 		} \
 	}
 
+#define SAFE_FREE(_var) \
+ if (_var != NULL) { \
+		free(_var); \
+		_var = NULL; \
+ }
+
 static inline char *sgets(
 	char **out,
 	size_t len,
@@ -161,8 +167,13 @@ section_t *parser_getSection(
 					}
 				}
 				continue;
-			default:
+			case LEGEND_COMMENT1:
+			case LEGEND_COMMENT2:
 				continue;
+			default:
+    parser_uninitSection(ret);
+    fprintf(stderr, "ERROR: Unknown character: %c", prev[0]);
+				return NULL;
 		}
 	}
 	end:
@@ -181,10 +192,10 @@ section_t *parser_getSection(
 	if (ret == NULL) {
 		fprintf(stderr, "ERROR: Failed to find section: %s\n", name);
 	}
-	
-	#undef SIZE
-	#undef NAME
-	#undef VALUE
+ 
+ #undef SIZE
+ #undef NAME
+ #undef VALUE
 	return ret;
 }
 
@@ -223,21 +234,22 @@ size_t parser_getVar(
 }
 
 void parser_uninitVar(var_t *var) {
-	if (var->name != NULL) {
-		free(var->name);
-		var->name = NULL;
-	}
-	
-	if (var->value != NULL) {
-		free(var->value);
-		var->value = NULL;
-	}
+ if (var == NULL) {
+  return;
+ }
+ 
+ SAFE_FREE(var->name);
+ SAFE_FREE(var->value);
 	return;
 }
 
 void parser_uninitSection(section_t *sect) {
 	size_t i;
 	
+ if (sect == NULL) {
+  return;
+ }
+
 	for (i = 0; i < sect->vars.size; i++) {
 		parser_uninitVar(&sect->vars.i[i]);
 	}
