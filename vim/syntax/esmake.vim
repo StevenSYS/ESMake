@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language: ESMake
 " Maintainer: StevenSYS
-" Last Change: 14-04-2026
+" Last Change: 05-06-2026
 
 if exists("b:current_syntax")
 	finish
